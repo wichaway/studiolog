@@ -1,5 +1,5 @@
 /* global self, caches */
-var CACHE_NAME = "student-attendance-pwa-v1";
+var CACHE_NAME = "student-attendance-pwa-v3";
 var PRECACHE_URLS = [
   "./index.html",
   "./manifest.webmanifest",
@@ -34,8 +34,13 @@ self.addEventListener("fetch", function (event) {
   var url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
+  var accept = event.request.headers.get("accept") || "";
+  var isDocument =
+    event.request.mode === "navigate" || accept.indexOf("text/html") !== -1;
+  var fetchOpts = isDocument ? { cache: "no-store" } : {};
+
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, fetchOpts)
       .then(function (response) {
         if (
           response &&

@@ -10,6 +10,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #0f1419;
@@ -180,6 +183,7 @@ body {
 }
 
 input[type="text"],
+input[type="tel"],
 input[type="date"],
 input[type="month"],
 select {
@@ -782,10 +786,12 @@ select:focus {
   margin: 0;
 }
 
+tr.attendance-row--teacher td {
+  background: rgba(56, 189, 248, 0.07);
+  border-bottom: 1px solid var(--border);
+}
+
 </style>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 <div class="app">
@@ -837,12 +843,20 @@ select:focus {
 <span class="field__label" data-i18n="photoLabel"></span>
 <input type="file" id="input-student-photo" accept="image/*">
 </label>
+<label class="field">
+<span class="field__label" data-i18n="phoneLabel"></span>
+<input type="tel" id="input-student-phone" maxlength="20" inputmode="tel" autocomplete="tel" placeholder="">
+</label>
 <span id="student-photo-preview" class="avatar avatar--preview" style="display:none" aria-hidden="true"></span>
 <button type="submit" class="btn btn--primary" data-i18n="addStudent"></button>
 </form>
 <ul id="list-students" class="list"></ul>
 </article>
 </div>
+<label class="field card card--wide" style="margin-top:1rem;padding:1rem 1.25rem">
+<span class="field__label" data-i18n="teacherNameLabel"></span>
+<input type="text" id="input-teacher-name" maxlength="120" autocomplete="name" placeholder="">
+</label>
 </section>
 <section id="view-journal" class="panel" hidden>
 <div class="grid-two">
@@ -941,6 +955,7 @@ select:focus {
 <p id="avatar-menu-student-name" class="modal__meta"></p>
 <div class="avatar-menu-actions">
 <button type="button" class="btn btn--ghost" id="avatar-menu-edit-name" data-i18n="rename"></button>
+<button type="button" class="btn btn--ghost" id="avatar-menu-edit-phone" data-i18n="avatarMenuPhone"></button>
 <button type="button" class="btn btn--ghost" id="avatar-menu-change-photo" data-i18n="photoPick"></button>
 <button type="button" class="btn btn--ghost" id="avatar-menu-remove-photo" data-i18n="photoRemove"></button>
 </div>
@@ -1031,7 +1046,17 @@ select:focus {
     postTrialReminderText:
       "\u05db\u05d1\u05e8 \u05d4\u05d9\u05d9\u05ea\u05d4 \u05d1\u05e9\u05d9\u05e2\u05d5\u05e8 \u05e0\u05d9\u05e1\u05d9\u05d5\u05df \u2014 \u05d9\u05e9 \u05dc\u05d4\u05d9\u05e8\u05e9\u05dd / \u05dc\u05e9\u05dc\u05dd.",
     confirmRemoveStudent: "\u05dc\u05d4\u05e1\u05d9\u05e8?",
+    phoneLabel:
+      "\u05d8\u05dc\u05e4\u05d5\u05df (\u05dc\u05d4\u05d5\u05d3\u05e2\u05d5\u05ea \u05d0\u05d5\u05d8\u05d5\u05de\u05d8\u05d9\u05d5\u05ea \u05dc\u05e0\u05e2\u05d3\u05e8)",
+    teacherNameLabel:
+      "\u05e9\u05dd \u05d4\u05de\u05d5\u05e8\u05d4 (\u05d1\u05d4\u05d5\u05d3\u05e2\u05d5\u05ea \u05d5\u05d1\u05e9\u05d5\u05e8\u05ea \u05d4\u05de\u05d5\u05e8\u05d4)",
+    avatarMenuPhone: "\u05d8\u05dc\u05e4\u05d5\u05df",
+    absentNoPhone:
+      "\u05dc\u05d0 \u05e8\u05e9\u05d5\u05dd \u05d8\u05dc\u05e4\u05d5\u05df \u2014 \u05dc\u05d0 \u05e0\u05d9\u05ea\u05df \u05dc\u05e4\u05ea\u05d5\u05d7 WhatsApp. \u05d4\u05d5\u05e1\u05d9\u05e4\u05d5 \u05de\u05ea\u05e4\u05e8\u05d9\u05d8 \u05d4\u05ea\u05de\u05d5\u05e0\u05d4.",
+    teacherDefaultName: "\u05d4\u05de\u05d5\u05e8\u05d4",
   };
+
+  var TEACHER_ATTENDANCE_ID = "__teacher__";
 
   var editingSessionId = null;
   var pendingStudentPhoto = "";
@@ -1039,7 +1064,7 @@ select:focus {
   var avatarMenuStudentId = null;
 
   function emptyState() {
-    return { groups: [], students: [], sessions: [] };
+    return { groups: [], students: [], sessions: [], teacherName: "" };
   }
 
   function uid() {
@@ -1059,6 +1084,8 @@ select:focus {
         groups: parsed.groups,
         students: parsed.students,
         sessions: parsed.sessions,
+        teacherName:
+          typeof parsed.teacherName === "string" ? parsed.teacherName : "",
       };
     } catch (e) {
       return emptyState();
@@ -1066,11 +1093,21 @@ select:focus {
   }
 
   function normalizeState(state) {
+    if (typeof state.teacherName !== "string") state.teacherName = "";
+    state.teacherName = String(state.teacherName).slice(0, 120);
     for (var i = 0; i < state.students.length; i++) {
       var s = state.students[i];
       if (s.paymentStatus !== "paid" && s.paymentStatus !== "unpaid" && s.paymentStatus !== "trial")
         s.paymentStatus = "paid";
       if (typeof s.postTrialReminder !== "boolean") s.postTrialReminder = false;
+      if (typeof s.phone !== "string") s.phone = "";
+      s.phone = String(s.phone).trim().slice(0, 20);
+    }
+    for (var j = 0; j < state.sessions.length; j++) {
+      var sess = state.sessions[j];
+      if (!sess.attendance) sess.attendance = {};
+      if (sess.attendance[TEACHER_ATTENDANCE_ID] === undefined)
+        sess.attendance[TEACHER_ATTENDANCE_ID] = "present";
     }
   }
 
@@ -1214,15 +1251,95 @@ select:focus {
       absent = 0,
       late = 0,
       excused = 0;
-    var vals = Object.values(attendance);
-    for (var i = 0; i < vals.length; i++) {
-      var st = vals[i];
+    var keys = Object.keys(attendance);
+    for (var i = 0; i < keys.length; i++) {
+      var id = keys[i];
+      if (id === TEACHER_ATTENDANCE_ID) continue;
+      var st = attendance[id];
       if (st === "present") present++;
       else if (st === "absent") absent++;
       else if (st === "late") late++;
       else if (st === "excused") excused++;
     }
     return { present: present, absent: absent, late: late, excused: excused };
+  }
+
+  function teacherDisplayName(state) {
+    var t = String(state.teacherName || "").trim();
+    return t ? t : STR.teacherDefaultName;
+  }
+
+  function getPreviousSessionSameGroup(state, sess) {
+    var best = null;
+    for (var i = 0; i < state.sessions.length; i++) {
+      var s = state.sessions[i];
+      if (s.groupId !== sess.groupId || s.id === sess.id) continue;
+      if (s.date >= sess.date) continue;
+      if (!best || s.date > best.date) best = s;
+    }
+    return best;
+  }
+
+  function normalizePhoneForWhatsApp(raw) {
+    var d = String(raw || "").replace(/\D/g, "");
+    if (!d) return "";
+    if (d.indexOf("972") === 0) return d;
+    if (d.charAt(0) === "0") return "972" + d.slice(1);
+    if (d.length === 9) return "972" + d;
+    return d;
+  }
+
+  function openWhatsAppWithText(phone, text) {
+    var num = normalizePhoneForWhatsApp(phone);
+    if (!num) return false;
+    var url =
+      "https://wa.me/" + num + "?text=" + encodeURIComponent(text);
+    window.open(url, "_blank", "noopener,noreferrer");
+    return true;
+  }
+
+  function absentMessageOnce(studentName) {
+    return (
+      "\u05de\u05d4 \u05e9\u05dc\u05d5\u05de\u05da " +
+      studentName +
+      "? \u05e8\u05d0\u05d9\u05ea\u05d9 \u05e9\u05dc\u05d0 \u05d4\u05d2\u05e2\u05ea \u05d4\u05d9\u05d5\u05dd \u05dc\u05e9\u05d9\u05e2\u05d5\u05e8 \u05d5\u05de\u05e7\u05d5\u05d5\u05d4 \u05e9\u05d4\u05db\u05dc \u05d1\u05e1\u05d3\u05e8"
+    );
+  }
+
+  function absentMessageTwice(studentName, teacherName) {
+    return (
+      "\u05d4\u05d9 " +
+      studentName +
+      ". \u05d0\u05e0\u05d9 \u05e8\u05d5\u05d0\u05d4 \u05e9\u05e0\u05e2\u05d3\u05e8\u05ea \u05d1\u05e9\u05e0\u05d9 \u05d4\u05e9\u05d9\u05e2\u05d5\u05e8\u05d9\u05dd \u05d4\u05d0\u05d7\u05e8\u05d5\u05e0\u05d9\u05dd \u05d5\u05e8\u05e6\u05d9\u05ea\u05d9 \u05dc\u05d3\u05e2\u05ea \u05d0\u05dd \u05d4\u05db\u05dc \u05d1\u05e1\u05d3\u05e8. \u05d0\u05e9\u05de\u05d7 \u05dc\u05d3\u05e2\u05ea \u05de\u05d4 \u05e7\u05d5\u05e8\u05d4 \u05d5\u05dc\u05e2\u05d6\u05d5\u05e8 \u05d1\u05db\u05dc \u05d1\u05e2\u05d9\u05d4. " +
+      teacherName
+    );
+  }
+
+  function queueAbsentWhatsAppNotifications(state, sess, transitionedToAbsentIds) {
+    var tname = teacherDisplayName(state);
+    for (var i = 0; i < transitionedToAbsentIds.length; i++) {
+      (function (idx) {
+        window.setTimeout(function () {
+          var sid = transitionedToAbsentIds[idx];
+          var st = state.students.find(function (s) {
+            return s.id === sid;
+          });
+          if (!st) return;
+          var phone = String(st.phone || "").trim();
+          if (!phone) {
+            window.alert(STR.absentNoPhone + " \u2014 " + st.name);
+            return;
+          }
+          var prevSess = getPreviousSessionSameGroup(state, sess);
+          var prevAbsent =
+            prevSess && prevSess.attendance && prevSess.attendance[sid] === "absent";
+          var body = prevAbsent
+            ? absentMessageTwice(st.name, tname)
+            : absentMessageOnce(st.name);
+          openWhatsAppWithText(phone, body);
+        }, idx * 650);
+      })(i);
+    }
   }
 
   function refreshGroupSelects(state) {
@@ -1525,7 +1642,9 @@ select:focus {
         btn.type = "button";
         btn.className = "session-card";
         var counts = countStatuses(sess.attendance);
-        var total = Object.keys(sess.attendance).length;
+        var total = Object.keys(sess.attendance).filter(function (k) {
+          return k !== TEACHER_ATTENDANCE_ID;
+        }).length;
         btn.innerHTML =
           '<div class="session-card__group">' +
           escapeHtml(groupName(state, sess.groupId)) +
@@ -1580,6 +1699,8 @@ select:focus {
       if (sess.attendance[st.id] === undefined)
         sess.attendance[st.id] = "present";
     }
+    if (sess.attendance[TEACHER_ATTENDANCE_ID] === undefined)
+      sess.attendance[TEACHER_ATTENDANCE_ID] = "present";
 
     var table = document.createElement("table");
     table.className = "attendance-table";
@@ -1598,9 +1719,50 @@ select:focus {
       excused: STR.statusExcused,
     };
 
+    var keys = ["present", "absent", "late", "excused"];
+
     studs.sort(function (a, b) {
       return a.name.localeCompare(b.name, "he");
     });
+
+    var tDisplay = teacherDisplayName(state);
+    var trTeacher = document.createElement("tr");
+    trTeacher.className = "attendance-row--teacher";
+    var tdTeacherName = document.createElement("td");
+    var cellT = document.createElement("div");
+    cellT.className = "student-cell";
+    var avT = document.createElement("span");
+    avT.className = "avatar avatar--sm";
+    avT.setAttribute("aria-hidden", "true");
+    var phT = document.createElement("span");
+    phT.className = "avatar__placeholder";
+    phT.textContent = initialFromName(tDisplay);
+    avT.appendChild(phT);
+    cellT.appendChild(avT);
+    var nameWrapT = document.createElement("div");
+    nameWrapT.className = "student-cell__names";
+    var nmT = document.createElement("span");
+    nmT.className = "student-cell__name";
+    nmT.textContent = tDisplay;
+    nameWrapT.appendChild(nmT);
+    cellT.appendChild(nameWrapT);
+    tdTeacherName.appendChild(cellT);
+    var tdTeacherSel = document.createElement("td");
+    var selTeacher = document.createElement("select");
+    selTeacher.dataset.studentId = TEACHER_ATTENDANCE_ID;
+    for (var kt = 0; kt < keys.length; kt++) {
+      var keyT = keys[kt];
+      var optT = document.createElement("option");
+      optT.value = keyT;
+      optT.textContent = statusLabels[keyT];
+      selTeacher.appendChild(optT);
+    }
+    selTeacher.value = sess.attendance[TEACHER_ATTENDANCE_ID] || "present";
+    tdTeacherSel.appendChild(selTeacher);
+    trTeacher.appendChild(tdTeacherName);
+    trTeacher.appendChild(tdTeacherSel);
+    tbody.appendChild(trTeacher);
+
     for (var j = 0; j < studs.length; j++) {
       var stu = studs[j];
       var tr = document.createElement("tr");
@@ -1631,7 +1793,6 @@ select:focus {
       var tdSel = document.createElement("td");
       var select = document.createElement("select");
       select.dataset.studentId = stu.id;
-      var keys = ["present", "absent", "late", "excused"];
       for (var k = 0; k < keys.length; k++) {
         var key = keys[k];
         var opt = document.createElement("option");
@@ -1703,7 +1864,7 @@ select:focus {
     var rmBtn = document.getElementById("avatar-menu-remove-photo");
     if (!overlay || !titleEl || !meta) return;
     titleEl.textContent = STR.avatarMenuTitle;
-    meta.textContent = st.name;
+    meta.textContent = st.name + (st.phone ? " \u00b7 " + st.phone : "");
     if (rmBtn) rmBtn.hidden = !st.photo;
     overlay.hidden = false;
   }
@@ -1743,17 +1904,30 @@ select:focus {
       return s.id === editingSessionId;
     });
     if (!sess) return;
+    var prev = {};
+    for (var pk in sess.attendance) prev[pk] = sess.attendance[pk];
+    var transitionedToAbsent = [];
     var selects = document.querySelectorAll("#modal-attendance select");
     for (var i = 0; i < selects.length; i++) {
       var sel = selects[i];
       var sid = sel.dataset.studentId;
-      sess.attendance[sid] = sel.value;
+      if (!sid) continue;
+      var val = sel.value;
+      if (
+        sid !== TEACHER_ATTENDANCE_ID &&
+        val === "absent" &&
+        prev[sid] !== "absent"
+      )
+        transitionedToAbsent.push(sid);
+      sess.attendance[sid] = val;
     }
     applySessionSavedPaymentRules(state, sess);
     saveState(state);
     renderStudents(state);
     renderJournal(state);
     closeModal();
+    if (transitionedToAbsent.length)
+      queueAbsentWhatsAppNotifications(state, sess, transitionedToAbsent);
   }
 
   function deleteEditingSession(state) {
@@ -1787,6 +1961,15 @@ select:focus {
   }
 
   function initForms(state) {
+    var teachInp = document.getElementById("input-teacher-name");
+    if (teachInp) {
+      teachInp.value = state.teacherName || "";
+      teachInp.addEventListener("input", function () {
+        state.teacherName = String(this.value || "").trim().slice(0, 120);
+        saveState(state);
+      });
+    }
+
     document
       .getElementById("form-add-group")
       .addEventListener("submit", function (e) {
@@ -1817,10 +2000,16 @@ select:focus {
           name: name.slice(0, 120),
           photo: pendingStudentPhoto || "",
           notes: "",
+          phone: (function () {
+            var tel = document.getElementById("input-student-phone");
+            return tel ? String(tel.value || "").trim().slice(0, 20) : "";
+          })(),
           paymentStatus: "unpaid",
           postTrialReminder: false,
         });
         input.value = "";
+        var telIn = document.getElementById("input-student-phone");
+        if (telIn) telIn.value = "";
         clearPendingPhoto();
         saveState(state);
         renderStudents(state);
@@ -1879,6 +2068,7 @@ select:focus {
         }
 
         var attendance = {};
+        attendance[TEACHER_ATTENDANCE_ID] = "present";
         var sg = studentsInGroup(state, gid);
         for (var j = 0; j < sg.length; j++) {
           attendance[sg[j].id] = "present";
@@ -1943,6 +2133,7 @@ select:focus {
     var avOverlay = document.getElementById("avatar-menu-overlay");
     var avClose = document.getElementById("avatar-menu-close");
     var avEditName = document.getElementById("avatar-menu-edit-name");
+    var avEditPhone = document.getElementById("avatar-menu-edit-phone");
     var avChangePhoto = document.getElementById("avatar-menu-change-photo");
     var avRemovePhoto = document.getElementById("avatar-menu-remove-photo");
     var avFile = document.getElementById("avatar-menu-file-input");
@@ -1960,6 +2151,18 @@ select:focus {
         var trimmed = String(raw).replace(/\s+/g, " ").trim();
         if (!trimmed) return;
         st.name = trimmed.slice(0, 120);
+        saveState(state);
+        closeAvatarStudentMenu();
+        renderStudents(state);
+        renderJournal(state);
+      });
+    if (avEditPhone)
+      avEditPhone.addEventListener("click", function () {
+        var st = getAvatarMenuStudent(state);
+        if (!st) return;
+        var raw = window.prompt(STR.avatarMenuPhone, st.phone || "");
+        if (raw == null) return;
+        st.phone = String(raw).replace(/\s+/g, " ").trim().slice(0, 20);
         saveState(state);
         closeAvatarStudentMenu();
         renderStudents(state);
@@ -2027,12 +2230,16 @@ select:focus {
             state.groups = data.groups;
             state.students = data.students;
             state.sessions = data.sessions;
+            state.teacherName =
+              typeof data.teacherName === "string" ? data.teacherName : "";
             normalizeState(state);
             saveState(state);
             renderGroups(state);
             renderStudents(state);
             refreshGroupSelects(state);
             renderJournal(state);
+            var tin = document.getElementById("input-teacher-name");
+            if (tin) tin.value = state.teacherName || "";
           } catch (err) {
             window.alert(STR.importError);
           }
@@ -2052,11 +2259,27 @@ select:focus {
       loc.hostname !== "127.0.0.1"
     )
       return;
+
+    function checkForSwUpdate(reg) {
+      if (reg) reg.update();
+    }
+
     window.addEventListener("load", function () {
       navigator.serviceWorker
-        .register("./sw.js", { scope: "./" })
+        .register("./sw.js", {
+          scope: "./",
+          updateViaCache: "none",
+        })
+        .then(function (reg) {
+          checkForSwUpdate(reg);
+          document.addEventListener("visibilitychange", function () {
+            if (document.visibilityState === "visible") checkForSwUpdate(reg);
+          });
+        })
         .catch(function () {});
     });
+
+    navigator.serviceWorker.getRegistration().then(checkForSwUpdate);
   }
 
   function main() {
