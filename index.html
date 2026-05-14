@@ -183,6 +183,7 @@ body {
 }
 
 input[type="text"],
+input[type="password"],
 input[type="tel"],
 input[type="date"],
 input[type="month"],
@@ -791,18 +792,279 @@ tr.attendance-row--teacher td {
   border-bottom: 1px solid var(--border);
 }
 
+.home-hero {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+#screen-home.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+}
+
+.home-header-bar {
+  position: relative;
+  margin-bottom: 0;
+  padding-right: 9rem;
+  flex-shrink: 0;
+}
+
+.home-employee-shell {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  width: 100%;
+  padding: 1rem;
+}
+
+.home-card--employee {
+  width: 100%;
+  max-width: 28rem;
+  margin-inline: auto;
+}
+
+.home-header-bar .home-hero {
+  margin-bottom: 0;
+}
+
+.home-hero .header__title {
+  font-size: 1.65rem;
+}
+
+.home-hero .header__subtitle {
+  max-width: 36rem;
+  margin-inline: auto;
+}
+
+.home-btn-admin-entry {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .home-header-bar {
+    padding-right: 0;
+    padding-top: 2.75rem;
+  }
+}
+
+.home-card .stack-form {
+  margin-top: 0.5rem;
+}
+
+.home-mode {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.home-mode label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.home-mode input {
+  accent-color: var(--accent);
+}
+
+#home-admin-panel[hidden],
+.home-gate-msg[hidden] {
+  display: none !important;
+}
+
+.home-gate-msg {
+  margin-top: 0.75rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.home-gate-msg.is-error {
+  border-color: rgba(248, 113, 113, 0.55);
+  color: #fecaca;
+}
+
+.home-gate-msg.is-ok {
+  border-color: rgba(74, 222, 128, 0.45);
+  color: #bbf7d0;
+}
+
+.home-admin-overlay {
+  z-index: 120;
+}
+
+.employee-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  max-height: 14rem;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.employee-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.88rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.employee-list li:last-child {
+  border-bottom: none;
+}
+
+.header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header__session {
+  font-size: 0.82rem;
+  color: var(--muted);
+  max-width: 14rem;
+  text-align: end;
+  line-height: 1.35;
+}
+
+.screen-app[hidden] {
+  display: none !important;
+}
+
+#screen-home[hidden] {
+  display: none !important;
+}
+
 </style>
 </head>
 <body>
+<div id="screen-home" class="app">
+<header class="home-header-bar">
+<div class="home-hero">
+<div class="header__brand" style="margin-inline:auto;justify-content:center">
+<span class="header__logo" aria-hidden="true">&#128203;</span>
+<div>
+<h1 class="header__title" data-i18n="homeTitle"></h1>
+<p class="header__subtitle" data-i18n="homeSubtitle"></p>
+</div>
+</div>
+</div>
+<button type="button" class="btn btn--ghost home-btn-admin-entry" id="btn-home-open-admin" data-i18n="btnAdminEntry"></button>
+</header>
+<div class="home-employee-shell">
+<article class="card home-card home-card--employee">
+<div class="card__head">
+<h3 class="card__title" data-i18n="employeeGateTitle"></h3>
+<p class="card__hint" data-i18n="homeEmployeeHint"></p>
+</div>
+<form id="form-home-employee" class="stack-form" autocomplete="off">
+<label class="field">
+<span class="field__label" data-i18n="gateInstitutionName"></span>
+<input type="text" id="home-employee-institution" required maxlength="120" autocomplete="organization">
+</label>
+<label class="field">
+<span class="field__label" data-i18n="gateFullName"></span>
+<input type="text" id="home-employee-fullname" required maxlength="120" autocomplete="name">
+</label>
+<label class="field">
+<span class="field__label" data-i18n="gatePersonalCode"></span>
+<input type="password" id="home-employee-code" required maxlength="64" autocomplete="current-password">
+</label>
+<button type="submit" class="btn btn--primary" data-i18n="btnEmployeeLogin"></button>
+</form>
+<div id="home-employee-msg" class="home-gate-msg" hidden></div>
+</article>
+</div>
+<div id="home-admin-overlay" class="modal-overlay home-admin-overlay" hidden>
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="home-admin-modal-title">
+<header class="modal__head">
+<h3 id="home-admin-modal-title" class="modal__title" data-i18n="adminGateTitle"></h3>
+<button type="button" class="modal__close" id="home-admin-modal-close" aria-label="">&times;</button>
+</header>
+<p class="card__hint" style="margin:0 0 0.75rem" data-i18n="homeAdminHint"></p>
+<div class="home-mode" role="group" aria-label="מצב מנהל">
+<label><input type="radio" name="home-admin-mode" id="home-admin-mode-new" value="new" checked> <span data-i18n="adminNewInstitution"></span></label>
+<label><input type="radio" name="home-admin-mode" id="home-admin-mode-existing" value="existing"> <span data-i18n="adminExistingLogin"></span></label>
+</div>
+<form id="form-home-admin" class="stack-form" autocomplete="off">
+<label class="field">
+<span class="field__label" data-i18n="gateInstitutionName"></span>
+<input type="text" id="home-admin-institution" required maxlength="120" autocomplete="organization">
+</label>
+<label class="field">
+<span class="field__label" data-i18n="gateFullName"></span>
+<input type="text" id="home-admin-fullname" required maxlength="120" autocomplete="name">
+</label>
+<label class="field">
+<span class="field__label" data-i18n="gatePersonalCode"></span>
+<input type="password" id="home-admin-code" required maxlength="64" autocomplete="new-password">
+</label>
+<label class="field" id="home-legacy-wrap">
+<label class="field" style="flex-direction:row;align-items:center;gap:0.5rem;margin:0">
+<input type="checkbox" id="home-admin-import-legacy">
+<span class="field__label" style="margin:0" data-i18n="legacyImportLabel"></span>
+</label>
+<p class="card__hint" style="margin-top:0.35rem" data-i18n="legacyImportHint"></p>
+</label>
+<button type="submit" class="btn btn--primary" id="home-admin-submit"></button>
+</form>
+<div id="home-admin-msg" class="home-gate-msg" hidden></div>
+<div id="home-admin-panel" hidden>
+<hr style="border:none;border-top:1px solid var(--border);margin:1rem 0">
+<h4 class="card__title" style="font-size:1rem" data-i18n="employeesManageTitle"></h4>
+<p class="card__hint" data-i18n="employeesManageHint"></p>
+<form id="form-add-employee" class="inline-form" style="margin-top:0.75rem;flex-wrap:wrap">
+<label class="field field--inline">
+<span class="field__label" data-i18n="gateFullName"></span>
+<input type="text" id="home-emp-name" maxlength="120" autocomplete="off">
+</label>
+<label class="field field--inline">
+<span class="field__label" data-i18n="gatePersonalCode"></span>
+<input type="password" id="home-emp-code" maxlength="64" autocomplete="new-password">
+</label>
+<button type="submit" class="btn btn--primary" data-i18n="addEmployee"></button>
+</form>
+<ul id="home-employee-list" class="employee-list" aria-label="עובדים"></ul>
+<button type="button" class="btn btn--primary" style="width:100%;margin-top:0.75rem" id="home-btn-enter-app-admin" data-i18n="btnEnterApp"></button>
+</div>
+</div>
+</div>
+</div>
+<div id="screen-app" class="screen-app" hidden>
 <div class="app">
 <header class="header">
 <div class="header__brand">
 <span class="header__logo" aria-hidden="true">&#128203;</span>
 <div>
 <h1 class="header__title" data-i18n="title"></h1>
-<p class="header__subtitle" data-i18n="subtitle"></p>
+<p class="header__subtitle" id="header-subtitle-app" data-i18n="subtitle"></p>
 </div>
 </div>
+<div class="header__actions">
+<p class="header__session" id="header-session-line" hidden></p>
+<button type="button" class="btn btn--ghost btn--small" id="btn-logout" data-i18n="btnLogout"></button>
 <nav class="tabs" role="tablist" aria-label="Main">
 <button type="button" class="tabs__btn is-active" data-view="manage" role="tab" aria-selected="true" data-i18n="tabManage"></button>
 <button type="button" class="tabs__btn" data-view="journal" role="tab" aria-selected="false" data-i18n="tabJournal"></button>
@@ -915,6 +1177,7 @@ tr.attendance-row--teacher td {
 </label>
 </footer>
 </div>
+</div>
 <div id="modal-overlay" class="modal-overlay" hidden>
 <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
 <header class="modal__head">
@@ -964,9 +1227,61 @@ tr.attendance-row--teacher td {
 </div>
 <script>
 (function () {
-  var STORAGE_KEY = "student-attendance-v1";
+  var LEGACY_STORAGE_KEY = "student-attendance-v1";
+  var REGISTRY_KEY = "student-attendance-registry-v1";
+  var SESSION_KEY = "student-attendance-session-v1";
+
+  var currentSession = null;
+
+  function dataKeyForInstitution(institutionId) {
+    return LEGACY_STORAGE_KEY + "::" + institutionId;
+  }
+
+  function getStorageKey() {
+    if (currentSession && currentSession.institutionId)
+      return dataKeyForInstitution(currentSession.institutionId);
+    return LEGACY_STORAGE_KEY;
+  }
 
   var STR = {
+    homeTitle: "\u05e0\u05d5\u05db\u05d7\u05d5\u05ea \u05d7\u05d5\u05d2\u05d9\u05dd",
+    homeSubtitle:
+      "\u05d4\u05d6\u05d3\u05d4\u05d5\u05ea \u05d0\u05dc \u05d4\u05de\u05d5\u05e1\u05d3 \u05e9\u05dc\u05da: \u05d4\u05d6\u05df \u05e9\u05dd \u05d4\u05de\u05d5\u05e1\u05d3, \u05e9\u05dd \u05de\u05dc\u05d0 \u05d5\u05e7\u05d5\u05d3 \u05d0\u05d9\u05e9\u05d9. \u05e8\u05e7 \u05d0\u05d7\u05e8\u05d9 \u05d4\u05db\u05e0\u05d9\u05e1\u05d4 \u05ea\u05d5\u05e6\u05d2 \u05d4\u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05e9\u05dc \u05d4\u05de\u05d5\u05e1\u05d3 \u05e9\u05dc\u05da.",
+    adminGateTitle: "\u05db\u05e0\u05d9\u05e1\u05ea \u05de\u05e0\u05d4\u05dc \u05de\u05d5\u05e1\u05d3",
+    btnAdminEntry: "\u05db\u05e0\u05d9\u05e1\u05ea \u05de\u05e0\u05d4\u05dc",
+    employeeGateTitle: "\u05db\u05e0\u05d9\u05e1\u05ea \u05e2\u05d5\u05d1\u05d3",
+    homeAdminHint:
+      "\u05de\u05e0\u05d4\u05dc \u05d9\u05d5\u05e6\u05e8 \u05de\u05d5\u05e1\u05d3 \u05d7\u05d3\u05e9 \u05d0\u05d5 \u05e0\u05db\u05e0\u05e1 \u05dc\u05de\u05d5\u05e1\u05d3 \u05e7\u05d9\u05d9\u05dd, \u05d5\u05de\u05d2\u05d3\u05d9\u05e8 \u05e2\u05d5\u05d1\u05d3\u05d9\u05dd \u05e2\u05dd \u05e9\u05dd \u05de\u05dc\u05d0 \u05d5\u05e7\u05d5\u05d3 \u05d0\u05d9\u05e9\u05d9 \u05dc\u05db\u05dc \u05e2\u05d5\u05d1\u05d3.",
+    homeEmployeeHint:
+      "\u05d4\u05e7\u05d5\u05d3 \u05d5\u05d4\u05e9\u05dd \u05e0\u05e7\u05d1\u05e2\u05d9\u05dd \u05de\u05d4\u05de\u05e0\u05d4\u05dc. \u05dc\u05d0\u05d7\u05e8 \u05d4\u05db\u05e0\u05d9\u05e1\u05d4 \u05ea\u05d5\u05e6\u05d2 \u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4 \u05e9\u05dc \u05d4\u05de\u05d5\u05e1\u05d3.",
+    gateInstitutionName: "\u05e9\u05dd \u05d4\u05de\u05d5\u05e1\u05d3",
+    gateFullName: "\u05e9\u05dd \u05de\u05dc\u05d0",
+    gatePersonalCode: "\u05e7\u05d5\u05d3 \u05d0\u05d9\u05e9\u05d9",
+    adminNewInstitution: "\u05de\u05d5\u05e1\u05d3 \u05d7\u05d3\u05e9",
+    adminExistingLogin: "\u05de\u05e0\u05d4\u05dc \u05e7\u05d9\u05d9\u05dd",
+    btnCreateInstitution: "\u05d9\u05e6\u05d9\u05e8\u05ea \u05de\u05d5\u05e1\u05d3 \u05d5\u05d4\u05de\u05e9\u05da",
+    btnAdminLoginStaff: "\u05db\u05e0\u05d9\u05e1\u05d4 \u05dc\u05e0\u05d9\u05d4\u05d5\u05dc \u05e2\u05d5\u05d1\u05d3\u05d9\u05dd",
+    btnEmployeeLogin: "\u05db\u05e0\u05d9\u05e1\u05d4 \u05dc\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4",
+    employeesManageTitle: "\u05e2\u05d5\u05d1\u05d3\u05d9 \u05d4\u05de\u05d5\u05e1\u05d3",
+    employeesManageHint:
+      "\u05db\u05dc \u05e2\u05d5\u05d1\u05d3 \u05de\u05d6\u05d5\u05d4\u05d4 \u05e2\u05dd \u05e9\u05dd \u05de\u05dc\u05d0 \u05d5\u05e7\u05d5\u05d3 \u05d0\u05d9\u05e9\u05d9 \u05d9\u05db\u05d5\u05dc \u05dc\u05d4\u05d9\u05db\u05e0\u05e1 \u05de\u05db\u05e0\u05d9\u05e1\u05ea \u05d4\u05e2\u05d5\u05d1\u05d3\u05d9\u05dd.",
+    addEmployee: "\u05d4\u05d5\u05e1\u05e4\u05ea \u05e2\u05d5\u05d1\u05d3",
+    btnEnterApp: "\u05db\u05e0\u05d9\u05e1\u05d4 \u05dc\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4",
+    btnLogout: "\u05d9\u05e6\u05d9\u05d0\u05d4",
+    confirmLogout:
+      "\u05dc\u05e6\u05d0\u05ea \u05de\u05d4\u05de\u05e9\u05ea\u05de\u05e9 \u05d4\u05e0\u05d5\u05db\u05d7\u05d9? \u05d4\u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05e0\u05e9\u05de\u05e8\u05d9\u05dd \u05d1\u05de\u05db\u05e9\u05d9\u05e8.",
+    legacyImportLabel: "\u05d9\u05d9\u05d1\u05d0 \u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05e9\u05e0\u05e9\u05de\u05e8\u05d5 \u05dc\u05e4\u05e0\u05d9 \u05d4\u05e2\u05d3\u05db\u05d5\u05df (\u05de\u05d7\u05e9\u05d1 \u05d6\u05d4)",
+    legacyImportHint:
+      "\u05de\u05d5\u05e4\u05d9\u05e2 \u05e8\u05e7 \u05d1\u05e4\u05e2\u05dd \u05d4\u05e8\u05d0\u05e9\u05d5\u05df \u05e9\u05d9\u05e9 \u05dc\u05da \u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05d9\u05e9\u05e0\u05d9\u05dd \u05d1\u05de\u05e6\u05d1 \u05d6\u05d4.",
+    sessionLine: "\u05de\u05d5\u05e1\u05d3: {inst} \u00b7 {name} \u00b7 {role}",
+    roleAdmin: "\u05de\u05e0\u05d4\u05dc",
+    roleEmployee: "\u05e2\u05d5\u05d1\u05d3",
+    errInstitutionNotFound: "\u05dc\u05d0 \u05e0\u05de\u05e6\u05d0 \u05de\u05d5\u05e1\u05d3 \u05e2\u05dd \u05e9\u05dd \u05d6\u05d4.",
+    errWrongCredentials: "\u05e9\u05dd \u05de\u05dc\u05d0 \u05d0\u05d5 \u05e7\u05d5\u05d3 \u05e9\u05d2\u05d5\u05d9\u05d9\u05dd.",
+    errEmployeeNotFound: "\u05d4\u05e2\u05d5\u05d1\u05d3 \u05dc\u05d0 \u05e0\u05e8\u05e9\u05dd \u05d0\u05d5 \u05d4\u05e7\u05d5\u05d3 \u05e9\u05d2\u05d5\u05d9.",
+    errDuplicateInstitution:
+      "\u05db\u05d1\u05e8 \u05e7\u05d9\u05d9\u05dd \u05de\u05d5\u05e1\u05d3 \u05e2\u05dd \u05e9\u05dd \u05d6\u05d4. \u05d1\u05d7\u05e8\u05d5 \u05e9\u05dd \u05d0\u05d7\u05e8 \u05d0\u05d5 \u05d4\u05e9\u05ea\u05de\u05e9\u05d5 \u05d1\u05db\u05e0\u05d9\u05e1\u05ea \u05de\u05e0\u05d4\u05dc \u05e7\u05d9\u05d9\u05dd.",
+    errEmployeeDuplicate: "\u05db\u05d1\u05e8 \u05e7\u05d9\u05d9\u05dd \u05e2\u05d5\u05d1\u05d3 \u05e2\u05dd \u05e9\u05dd \u05d6\u05d4 \u05d0\u05d5 \u05e7\u05d5\u05d3 \u05d6\u05d4.",
     title: "\u05e0\u05d5\u05db\u05d7\u05d5\u05ea \u05d7\u05d5\u05d2\u05d9\u05dd \u05d5\u05e4\u05e2\u05d9\u05dc\u05d5\u05d9\u05d5\u05ea",
     subtitle:
       "\u05e0\u05d9\u05d4\u05d5\u05dc \u05e7\u05d1\u05d5\u05e6\u05d5\u05ea, \u05ea\u05dc\u05de\u05d9\u05d3\u05d9\u05dd \u05d5\u05d9\u05d5\u05de\u05df \u05e0\u05d5\u05db\u05d7\u05d5\u05ea",
@@ -1075,7 +1390,7 @@ tr.attendance-row--teacher td {
 
   function loadState() {
     try {
-      var raw = localStorage.getItem(STORAGE_KEY);
+      var raw = localStorage.getItem(getStorageKey());
       if (!raw) return emptyState();
       var parsed = JSON.parse(raw);
       if (!parsed.groups || !parsed.students || !parsed.sessions)
@@ -1112,7 +1427,385 @@ tr.attendance-row--teacher td {
   }
 
   function saveState(state) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(getStorageKey(), JSON.stringify(state));
+  }
+
+  function normalizeSpaces(s) {
+    return String(s || "").replace(/\s+/g, " ").trim();
+  }
+
+  function emptyRegistry() {
+    return { institutions: [] };
+  }
+
+  function loadRegistry() {
+    try {
+      var raw = localStorage.getItem(REGISTRY_KEY);
+      if (!raw) return emptyRegistry();
+      var p = JSON.parse(raw);
+      if (!p.institutions || !Array.isArray(p.institutions)) return emptyRegistry();
+      return p;
+    } catch (e) {
+      return emptyRegistry();
+    }
+  }
+
+  function saveRegistry(reg) {
+    localStorage.setItem(REGISTRY_KEY, JSON.stringify(reg));
+  }
+
+  function institutionsMatchingName(reg, institutionName) {
+    var n = normalizeSpaces(institutionName);
+    return reg.institutions.filter(function (inst) {
+      return normalizeSpaces(inst.name) === n;
+    });
+  }
+
+  function loadSession() {
+    try {
+      var raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return null;
+      var p = JSON.parse(raw);
+      if (!p.institutionId || !p.role || !p.fullName) return null;
+      if (p.role !== "admin" && p.role !== "employee") return null;
+      return {
+        institutionId: String(p.institutionId),
+        institutionName: String(p.institutionName || ""),
+        role: p.role,
+        fullName: String(p.fullName),
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function saveSession(sess) {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(sess));
+  }
+
+  function clearSession() {
+    localStorage.removeItem(SESSION_KEY);
+  }
+
+  function hasLegacyAttendanceData() {
+    try {
+      var raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (!raw) return false;
+      var p = JSON.parse(raw);
+      if (!p || !p.groups) return false;
+      if (p.groups.length) return true;
+      if (p.students && p.students.length) return true;
+      if (p.sessions && p.sessions.length) return true;
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function setHomeMessage(el, text, kind) {
+    if (!el) return;
+    if (!text) {
+      el.setAttribute("hidden", "");
+      el.textContent = "";
+      el.classList.remove("is-error", "is-ok");
+      return;
+    }
+    el.removeAttribute("hidden");
+    el.textContent = text;
+    el.classList.remove("is-error", "is-ok");
+    if (kind === "error") el.classList.add("is-error");
+    else if (kind === "ok") el.classList.add("is-ok");
+  }
+
+  var homeAdminInstitutionId = null;
+
+  function findInstitutionById(reg, id) {
+    return reg.institutions.find(function (x) {
+      return x.id === id;
+    });
+  }
+
+  function renderHomeEmployeeList(reg, instId) {
+    var ul = document.getElementById("home-employee-list");
+    if (!ul) return;
+    ul.innerHTML = "";
+    var inst = findInstitutionById(reg, instId);
+    if (!inst || !inst.employees) return;
+    for (var i = 0; i < inst.employees.length; i++) {
+      (function (emp) {
+        var li = document.createElement("li");
+        var span = document.createElement("span");
+        span.textContent = emp.fullName;
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "btn btn--ghost btn--small";
+        btn.textContent = STR.delete;
+        btn.addEventListener("click", function () {
+          var r2 = loadRegistry();
+          var ins = findInstitutionById(r2, instId);
+          if (!ins || !ins.employees) return;
+          ins.employees = ins.employees.filter(function (e) {
+            return e.id !== emp.id;
+          });
+          saveRegistry(r2);
+          renderHomeEmployeeList(r2, instId);
+        });
+        li.appendChild(span);
+        li.appendChild(btn);
+        ul.appendChild(li);
+      })(inst.employees[i]);
+    }
+  }
+
+  function updateHomeLegacyVisibility() {
+    var wrap = document.getElementById("home-legacy-wrap");
+    var modeNew = document.getElementById("home-admin-mode-new");
+    if (!wrap || !modeNew) return;
+    var show = modeNew.checked && hasLegacyAttendanceData();
+    wrap.style.display = show ? "" : "none";
+  }
+
+  function initHomeScreen() {
+    function openHomeAdminModal() {
+      var ov = document.getElementById("home-admin-overlay");
+      if (!ov) return;
+      ov.removeAttribute("hidden");
+      var first = document.getElementById("home-admin-institution");
+      if (first) first.focus();
+    }
+
+    function closeHomeAdminModal() {
+      var ov = document.getElementById("home-admin-overlay");
+      if (ov) ov.setAttribute("hidden", "");
+    }
+
+    var btnOpen = document.getElementById("btn-home-open-admin");
+    if (btnOpen) btnOpen.addEventListener("click", openHomeAdminModal);
+
+    var ovEl = document.getElementById("home-admin-overlay");
+    if (ovEl)
+      ovEl.addEventListener("click", function (e) {
+        if (e.target.id === "home-admin-overlay") closeHomeAdminModal();
+      });
+
+    var homeAdminClose = document.getElementById("home-admin-modal-close");
+    if (homeAdminClose)
+      homeAdminClose.addEventListener("click", closeHomeAdminModal);
+
+    var modeNew = document.getElementById("home-admin-mode-new");
+    var modeEx = document.getElementById("home-admin-mode-existing");
+    if (modeNew)
+      modeNew.addEventListener("change", function () {
+        updateHomeLegacyVisibility();
+        var sub = document.getElementById("home-admin-submit");
+        if (sub) sub.textContent = STR.btnCreateInstitution;
+        homeAdminInstitutionId = null;
+        var panel = document.getElementById("home-admin-panel");
+        if (panel) panel.setAttribute("hidden", "");
+        setHomeMessage(document.getElementById("home-admin-msg"), "", "");
+      });
+    if (modeEx)
+      modeEx.addEventListener("change", function () {
+        updateHomeLegacyVisibility();
+        var sub = document.getElementById("home-admin-submit");
+        if (sub) sub.textContent = STR.btnAdminLoginStaff;
+        homeAdminInstitutionId = null;
+        var panel = document.getElementById("home-admin-panel");
+        if (panel) panel.setAttribute("hidden", "");
+        setHomeMessage(document.getElementById("home-admin-msg"), "", "");
+      });
+    updateHomeLegacyVisibility();
+    var subInit = document.getElementById("home-admin-submit");
+    if (subInit)
+      subInit.textContent = document.getElementById("home-admin-mode-new").checked
+        ? STR.btnCreateInstitution
+        : STR.btnAdminLoginStaff;
+
+    var formAdmin = document.getElementById("form-home-admin");
+    if (formAdmin)
+      formAdmin.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var msg = document.getElementById("home-admin-msg");
+        setHomeMessage(msg, "", "");
+        var reg = loadRegistry();
+        var inName = normalizeSpaces(
+          document.getElementById("home-admin-institution").value
+        );
+        var full = normalizeSpaces(
+          document.getElementById("home-admin-fullname").value
+        );
+        var code = String(
+          document.getElementById("home-admin-code").value || ""
+        ).trim();
+        if (!inName || !full || !code) {
+          setHomeMessage(msg, STR.errWrongCredentials, "error");
+          return;
+        }
+        var isNew = document.getElementById("home-admin-mode-new").checked;
+        if (isNew) {
+          if (institutionsMatchingName(reg, inName).length) {
+            setHomeMessage(msg, STR.errDuplicateInstitution, "error");
+            return;
+          }
+          var newId = uid();
+          var importLegacy =
+            document.getElementById("home-admin-import-legacy") &&
+            document.getElementById("home-admin-import-legacy").checked;
+          reg.institutions.push({
+            id: newId,
+            name: inName,
+            adminFullName: full,
+            adminCode: code,
+            employees: [],
+          });
+          saveRegistry(reg);
+          if (importLegacy && hasLegacyAttendanceData()) {
+            var legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
+            localStorage.setItem(dataKeyForInstitution(newId), legacyRaw);
+            localStorage.removeItem(LEGACY_STORAGE_KEY);
+          } else if (!localStorage.getItem(dataKeyForInstitution(newId))) {
+            localStorage.setItem(
+              dataKeyForInstitution(newId),
+              JSON.stringify(emptyState())
+            );
+          }
+          homeAdminInstitutionId = newId;
+        } else {
+          var matches = institutionsMatchingName(reg, inName);
+          if (!matches.length) {
+            setHomeMessage(msg, STR.errInstitutionNotFound, "error");
+            return;
+          }
+          var inst = matches[0];
+          if (
+            normalizeSpaces(inst.adminFullName) !== full ||
+            String(inst.adminCode) !== code
+          ) {
+            setHomeMessage(msg, STR.errWrongCredentials, "error");
+            return;
+          }
+          homeAdminInstitutionId = inst.id;
+          if (!localStorage.getItem(dataKeyForInstitution(inst.id))) {
+            localStorage.setItem(
+              dataKeyForInstitution(inst.id),
+              JSON.stringify(emptyState())
+            );
+          }
+        }
+        var panel = document.getElementById("home-admin-panel");
+        if (panel) panel.removeAttribute("hidden");
+        setHomeMessage(msg, STR.employeesManageTitle + " — " + inName, "ok");
+        renderHomeEmployeeList(loadRegistry(), homeAdminInstitutionId);
+      });
+
+    var formEmpAdd = document.getElementById("form-add-employee");
+    if (formEmpAdd)
+      formEmpAdd.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (!homeAdminInstitutionId) return;
+        var fn = normalizeSpaces(
+          document.getElementById("home-emp-name").value
+        );
+        var pc = String(
+          document.getElementById("home-emp-code").value || ""
+        ).trim();
+        if (!fn || !pc) return;
+        var reg = loadRegistry();
+        var inst = findInstitutionById(reg, homeAdminInstitutionId);
+        if (!inst) return;
+        if (!inst.employees) inst.employees = [];
+        for (var i = 0; i < inst.employees.length; i++) {
+          var ex = inst.employees[i];
+          if (normalizeSpaces(ex.fullName) === fn || String(ex.personalCode) === pc) {
+            window.alert(STR.errEmployeeDuplicate);
+            return;
+          }
+        }
+        inst.employees.push({
+          id: uid(),
+          fullName: fn,
+          personalCode: pc,
+        });
+        saveRegistry(reg);
+        document.getElementById("home-emp-name").value = "";
+        document.getElementById("home-emp-code").value = "";
+        renderHomeEmployeeList(reg, homeAdminInstitutionId);
+      });
+
+    var btnEnter = document.getElementById("home-btn-enter-app-admin");
+    if (btnEnter)
+      btnEnter.addEventListener("click", function () {
+        if (!homeAdminInstitutionId) return;
+        var reg = loadRegistry();
+        var inst = findInstitutionById(reg, homeAdminInstitutionId);
+        if (!inst) return;
+        saveSession({
+          institutionId: inst.id,
+          institutionName: inst.name,
+          role: "admin",
+          fullName: inst.adminFullName,
+        });
+        window.location.reload();
+      });
+
+    var formEmployee = document.getElementById("form-home-employee");
+    if (formEmployee)
+      formEmployee.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var msg = document.getElementById("home-employee-msg");
+        setHomeMessage(msg, "", "");
+        var reg = loadRegistry();
+        var inName = normalizeSpaces(
+          document.getElementById("home-employee-institution").value
+        );
+        var full = normalizeSpaces(
+          document.getElementById("home-employee-fullname").value
+        );
+        var code = String(
+          document.getElementById("home-employee-code").value || ""
+        ).trim();
+        var matches = institutionsMatchingName(reg, inName);
+        if (!matches.length) {
+          setHomeMessage(msg, STR.errInstitutionNotFound, "error");
+          return;
+        }
+        var inst = matches[0];
+        var emp = (inst.employees || []).find(function (x) {
+          return normalizeSpaces(x.fullName) === full && String(x.personalCode) === code;
+        });
+        if (!emp) {
+          setHomeMessage(msg, STR.errEmployeeNotFound, "error");
+          return;
+        }
+        if (!localStorage.getItem(dataKeyForInstitution(inst.id))) {
+          localStorage.setItem(
+            dataKeyForInstitution(inst.id),
+            JSON.stringify(emptyState())
+          );
+        }
+        saveSession({
+          institutionId: inst.id,
+          institutionName: inst.name,
+          role: "employee",
+          fullName: emp.fullName,
+        });
+        window.location.reload();
+      });
+  }
+
+  function updateHeaderSessionLine() {
+    var line = document.getElementById("header-session-line");
+    if (!line || !currentSession) {
+      if (line) line.setAttribute("hidden", "");
+      return;
+    }
+    var roleLabel =
+      currentSession.role === "admin" ? STR.roleAdmin : STR.roleEmployee;
+    line.textContent = STR.sessionLine
+      .replace("{inst}", currentSession.institutionName || "—")
+      .replace("{name}", currentSession.fullName || "—")
+      .replace("{role}", roleLabel);
+    line.removeAttribute("hidden");
   }
 
   function applyI18n() {
@@ -1126,6 +1819,8 @@ tr.attendance-row--teacher td {
     if (notesClose) notesClose.setAttribute("aria-label", STR.closeAria);
     var avMenuClose = document.getElementById("avatar-menu-close");
     if (avMenuClose) avMenuClose.setAttribute("aria-label", STR.closeAria);
+    var homeAdminClose = document.getElementById("home-admin-modal-close");
+    if (homeAdminClose) homeAdminClose.setAttribute("aria-label", STR.closeAria);
   }
 
   function formatDateHe(isoDate) {
@@ -1961,6 +2656,14 @@ tr.attendance-row--teacher td {
   }
 
   function initForms(state) {
+    var logoutBtn = document.getElementById("btn-logout");
+    if (logoutBtn)
+      logoutBtn.addEventListener("click", function () {
+        if (!window.confirm(STR.confirmLogout)) return;
+        clearSession();
+        window.location.reload();
+      });
+
     var teachInp = document.getElementById("input-teacher-name");
     if (teachInp) {
       teachInp.value = state.teacherName || "";
@@ -2284,10 +2987,25 @@ tr.attendance-row--teacher td {
 
   function main() {
     applyI18n();
+    currentSession = loadSession();
+
+    if (!currentSession) {
+      document.getElementById("screen-home").removeAttribute("hidden");
+      document.getElementById("screen-app").setAttribute("hidden", "");
+      initHomeScreen();
+      registerServiceWorker();
+      return;
+    }
+
+    document.getElementById("screen-home").setAttribute("hidden", "");
+    document.getElementById("screen-app").removeAttribute("hidden");
+
+    updateHeaderSessionLine();
+
     var state = loadState();
     normalizeState(state);
 
-    var tabBtns = document.querySelectorAll(".tabs__btn");
+    var tabBtns = document.querySelectorAll("#screen-app .tabs__btn");
     for (var i = 0; i < tabBtns.length; i++) {
       tabBtns[i].addEventListener("click", function () {
         var v = this.getAttribute("data-view") || "manage";
