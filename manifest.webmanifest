@@ -1,14 +1,16 @@
 {
-  "name": "נוכחות חוגים",
+  "name": "נוכחות חוגים ופעילויות",
   "short_name": "נוכחות",
-  "description": "ניהול קבוצות, תלמידים ויומן נוכחות (שמירה מקומית בדפדפן).",
+  "description": "כניסה לפי מוסד: מנהל מגדיר עובדים, עובדים מדווחים נוכחות. ניהול קבוצות, תלמידים ויומן — הנתונים נשמרים במכשיר (דפדפן).",
   "lang": "he",
   "dir": "rtl",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#0f1419",
   "theme_color": "#0f1419",
+  "categories": ["education", "productivity"],
   "icons": [
     {
       "src": "icons/icon-192.png",
